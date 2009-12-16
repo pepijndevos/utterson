@@ -1,0 +1,5 @@
+pom-generated.xml
+Manifest.txt
+..jar
+*.jar
+.DS_Store
