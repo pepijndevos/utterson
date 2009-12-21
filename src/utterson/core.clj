@@ -19,6 +19,5 @@
     (when (and (.isFile (first files))
                (not(.isHidden (first files)))
                (.endsWith (.getPath (first files)) ".markdown")) ;Other extension?
-      (prn (first files))
       (send-off pages conj (parser (first files))))
     (when (next files) (recur (next files)))))
