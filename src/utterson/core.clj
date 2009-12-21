@@ -9,10 +9,10 @@
 
 (defn parser [file]
   (loop [lines (line-seq (BufferedReader. (FileReader. file))) meta-data {}]
-    (if (.contains (first lines) ":")
-      (let [data (re-find #"^(\w+): (.+)$" (first lines))]
-        (recur (rest lines) (assoc meta-data (second data) (nth data 2))))
-      [(future (markdown (apply str (interpose \newline (rest lines))))) meta-data])))
+    (let [data (re-find #"^(\w+): (.+)$" (first lines))]
+      (if data
+        (recur (rest lines) (assoc meta-data (second data) (nth data 2)))
+        [(future (markdown (apply str (interpose \newline lines)))) meta-data]))))
 
 (defn reader [dir]
   (loop [files (file-seq (java.io.File. dir))]
