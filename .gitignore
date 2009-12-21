@@ -3,3 +3,4 @@ Manifest.txt
 ..jar
 *.jar
 .DS_Store
+*.swp
