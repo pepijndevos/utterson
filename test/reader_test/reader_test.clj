@@ -1,0 +1,5 @@
+(load-file "../../src/utterson/core.clj")
+(in-ns 'core)
+(reader "md_files")
+(await pages)
+(println @pages)
