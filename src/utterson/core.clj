@@ -1,7 +1,6 @@
 (ns core
   (:import (java.io FileReader BufferedReader))
-  (:import (com.petebevin.markdown MarkdownProcessor))
-  (:require [clojure.contrib.str-utils2 :as string]))
+  (:import (com.petebevin.markdown MarkdownProcessor)))
 
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))
