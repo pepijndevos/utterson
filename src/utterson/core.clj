@@ -1,5 +1,5 @@
-(ns core
-  (:import (java.io FileReader BufferedReader))
+(ns utterson.core
+  (:import (java.io File FileReader BufferedReader))
   (:import (com.petebevin.markdown MarkdownProcessor)))
 
 (defn markdown [txt] ;Might be replaced with Showdown
@@ -14,7 +14,7 @@
         [(future (markdown (apply str (interpose \newline lines)))) meta-data]))))
 
 (defn reader [dir]
-  (loop [files (file-seq (java.io.File. dir)) pages (agent [])]
+  (loop [files (file-seq (File. dir)) pages (agent [])]
     (when (and (.isFile (first files))
                (not(.isHidden (first files)))
                (.endsWith (.getPath (first files)) ".markdown"))
@@ -24,12 +24,13 @@
       pages)))
 
 (defn template [page other]
-  (let [path (map #(apply str (interleave % (repeat (java.io.File/separator))))
-                  (iterate butlast (seq (.split (:url (last page))
-                                                (java.io.File/separator))))) ; abc/def/ghi -> ("abc/def/ghi/" "abc/def/" "abc/")
+  (let [path (->> (.split (:url (last page)) (java.io.File/separator))
+                  seq
+                  (iterate butlast)
+                  (map #(apply str (interleave % (repeat (java.io.File/separator)))))) 
         filename (.replaceAll (first path) "\\.markdown/$" ".clj")]
-    (if (.exists (java.io.File. filename))
-      ((load-file filename) page other)
-      ((load-file (some (fn [p]
+    (if (.exists (File. filename))
+      [((load-file filename) page other) (last page)]
+      [((load-file (some (fn [p]
               (some #(when (= (.getName %) "default.clj") (.getPath %))
-                    (.listFiles (java.io.File. p)))) path)) page other))))
+                    (.listFiles (File. p)))) path)) page other) (last page)])))
