@@ -1,1 +1,1 @@
-(ns utterson.config)
+(ns uterson.config)
