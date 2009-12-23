@@ -1,5 +1,5 @@
 (ns utterson.core
-  (:import (java.io File FileReader BufferedReader))
+  (:import (java.io File FileReader FileWriter BufferedReader BufferedWriter))
   (:import (com.petebevin.markdown MarkdownProcessor)))
 
 (defn markdown [txt] ;Might be replaced with Showdown
@@ -34,3 +34,11 @@
       [((load-file (some (fn [p]
               (some #(when (= (.getName %) "default.clj") (.getPath %))
                     (.listFiles (File. p)))) path)) page other) (last page)])))
+
+(defn writer [page dir dest]
+  (-> (:url (last page))
+    (.replaceAll dir dest)
+    (.replaceAll "\\.markdown$" (:extension (last page) ".html"))
+    FileWriter.
+    BufferedWriter.
+    (doto (.write (first page)) (.close))))

@@ -1,3 +1,4 @@
+extension: .txt
 AT&T has an ampersand in their name.
 
 AT&amp;T is another way to write it.
