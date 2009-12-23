@@ -1,2 +1,2 @@
 (defn post [a b]
-  "this is Tydiness.clj")
+  (str "this is Tydiness.clj" \newline @(first a)))

@@ -1,3 +1,5 @@
+title: Auto links
+
 Link: <http://example.com/>.
 
 With an ampersand: <http://example.com/?foo=1&bar=2>
