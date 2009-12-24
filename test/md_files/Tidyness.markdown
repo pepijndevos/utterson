@@ -1,7 +1,4 @@
-title: hallo wereld
-tags: bla, test
-date: 9/9/09
-
+Title: Our favourite file...
 > A list within a blockquote:
 > 
 > *	asterisk 1

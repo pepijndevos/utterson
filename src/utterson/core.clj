@@ -23,22 +23,24 @@
       (recur (next files) pages)
       pages)))
 
-(defn template [page other]
+(defn template [page other #^String dir #^String dest]
   (let [path (->> (.split #^String (:url (last page)) (File/separator))
                   seq
                   (iterate butlast)
                   (map #(apply str (interleave % (repeat (java.io.File/separator)))))) 
-        filename (.replaceAll #^String (first path) "\\.markdown/$" ".clj")]
+        filename (.replaceAll #^String (first path) "\\.markdown/$" ".clj")
+        page [(first page) (assoc (last page) :dest
+                    (-> #^String (:url (last page))
+                      (.replaceAll dir dest)
+                      (.replaceAll "\\.markdown$" #^String (:extension (last page) ".html"))))]]
     (if (.exists (File. filename))
       [((load-file filename) page other) (last page)]
       [((load-file (some (fn [#^String p]
               (some #(when (= (.getName #^File %) "default.clj") (.getPath #^File %))
                     (.listFiles (File. p)))) path)) page other) (last page)])))
 
-(defn writer [page #^String dir #^String dest]
-  (-> #^String (:url (last page))
-    (.replaceAll dir dest)
-    (.replaceAll "\\.markdown$" #^String (:extension (last page) ".html"))
-    FileWriter.
-    BufferedWriter.
-    (doto (.write #^String (first page)) (.close))))
+(defn writer [pages]
+  (doseq [page pages]
+    (future (with-open [file (BufferedWriter.
+                 (FileWriter. #^String (:dest (last page))))]
+      (.write file #^String (first page))))))

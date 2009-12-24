@@ -10,4 +10,4 @@
                    [:body
                     [:h1 (:title (second a))]
                     [:raw! @(first a)]
-                    (vec (cons :ul (map #(vector :li (:title (second %))) @b)))]])))
+                    (vec (cons :ul (map #(vector :li (:title (second %))) b)))]])))

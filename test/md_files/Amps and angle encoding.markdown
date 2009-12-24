@@ -1,5 +1,5 @@
-extension: .txt
-title: Amps and angle encoding
+title: Amps and angle ecoding
+tags: amp, encoding
 
 AT&T has an ampersand in their name.
 

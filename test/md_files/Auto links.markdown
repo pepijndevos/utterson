@@ -1,4 +1,5 @@
 title: Auto links
+extension: .xml
 
 Link: <http://example.com/>.
 
