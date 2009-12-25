@@ -1,6 +1,7 @@
 (ns utterson.core
   (:import (java.io File FileReader FileWriter BufferedReader BufferedWriter))
-  (:import (com.petebevin.markdown MarkdownProcessor)))
+  (:import (com.petebevin.markdown MarkdownProcessor))
+  (:use utterson.plugin))
 
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))
@@ -17,17 +18,17 @@
     (let [data (re-find #"^(\w+): (.+)$" (first lines))]
       (if data
         (recur (rest lines) (assoc meta-data (keyword (second data)) (nth data 2)))
-        [(future (markdown (apply str (interpose \newline lines)))) (src->dest meta-data dir dest)]))))
+        (do-action :filter [(future (markdown (apply str (interpose \newline lines)))) (src->dest meta-data dir dest)])))))
 
 (defn reader [#^String dir #^String dest]
-  (loop [files (file-seq (File. dir)) pages (agent [])]
+  (loop [files (file-seq (File. dir)) pages (agent (do-action :start []))]
     (when (and (.isFile #^File (first files))
                (not(.isHidden #^File (first files)))
                (.endsWith (.getPath #^File (first files)) ".markdown"))
       (send-off pages conj (parser (first files) dir dest)))
     (if (next files)
       (recur (next files) pages)
-      pages)))
+      (do-action :all-content pages))))
 
 (defn template [page other]
   (let [path (->> (.split #^String (:url (last page)) (File/separator))
@@ -42,7 +43,7 @@
                     (.listFiles (File. p)))) path)) page other) (last page)])))
 
 (defn writer [pages]
-  (doseq [page pages]
+  (doseq [page (do-action :all-template pages)]
     (.mkdirs (.getParentFile (File. #^String (:dest (last page)))))
     (with-open [file (BufferedWriter.
                  (FileWriter. #^String (:dest (last page))))]
