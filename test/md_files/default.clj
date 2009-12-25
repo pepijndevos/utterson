@@ -1,5 +1,6 @@
 (ns default
-  (:require clojure.contrib.prxml))
+  (:require clojure.contrib.prxml)
+  (:require utterson.util))
 
 (defn page [a b]
   (with-out-str (clojure.contrib.prxml/prxml 
@@ -10,4 +11,4 @@
                    [:body
                     [:h1 (:title (second a))]
                     [:raw! @(first a)]
-                    (vec (cons :ul (map #(vector :li (:title (second %))) b)))]])))
+                    [:raw! (utterson.util/menu b)]]])))

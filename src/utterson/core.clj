@@ -5,34 +5,36 @@
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))
 
-(defn parser [#^File file]
+(defn src->dest [meta-data #^String dir #^String dest]
+  (assoc meta-data :dest
+         (-> #^String (:url meta-data)
+           (.replaceAll dir dest)
+           (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
+
+(defn parser [#^File file #^String dir #^String dest]
   (loop [lines (line-seq (BufferedReader. (FileReader. file)))
          meta-data {:url (.getPath file)}]
     (let [data (re-find #"^(\w+): (.+)$" (first lines))]
       (if data
         (recur (rest lines) (assoc meta-data (keyword (second data)) (nth data 2)))
-        [(future (markdown (apply str (interpose \newline lines)))) meta-data]))))
+        [(future (markdown (apply str (interpose \newline lines)))) (src->dest meta-data dir dest)]))))
 
-(defn reader [#^String dir]
+(defn reader [#^String dir #^String dest]
   (loop [files (file-seq (File. dir)) pages (agent [])]
     (when (and (.isFile #^File (first files))
                (not(.isHidden #^File (first files)))
                (.endsWith (.getPath #^File (first files)) ".markdown"))
-      (send-off pages conj (parser (first files))))
+      (send-off pages conj (parser (first files) dir dest)))
     (if (next files)
       (recur (next files) pages)
       pages)))
 
-(defn template [page other #^String dir #^String dest]
+(defn template [page other]
   (let [path (->> (.split #^String (:url (last page)) (File/separator))
                   seq
                   (iterate butlast)
                   (map #(apply str (interleave % (repeat (java.io.File/separator)))))) 
-        filename (.replaceAll #^String (first path) "\\.markdown/$" ".clj")
-        page [(first page) (assoc (last page) :dest
-                    (-> #^String (:url (last page))
-                      (.replaceAll dir dest)
-                      (.replaceAll "\\.markdown$" #^String (:extension (last page) ".html"))))]]
+        filename (.replaceAll #^String (first path) "\\.markdown/$" ".clj")]
     (if (.exists (File. filename))
       [((load-file filename) page other) (last page)]
       [((load-file (some (fn [#^String p]
@@ -41,6 +43,7 @@
 
 (defn writer [pages]
   (doseq [page pages]
-    (future (with-open [file (BufferedWriter.
+    (.mkdirs (.getParentFile (File. #^String (:dest (last page)))))
+    (with-open [file (BufferedWriter.
                  (FileWriter. #^String (:dest (last page))))]
-      (.write file #^String (first page))))))
+      (.write file #^String (first page)))))
