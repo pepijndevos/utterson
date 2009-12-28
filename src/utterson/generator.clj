@@ -1,12 +1,13 @@
 (ns utterson.generator
   (:gen-class)
   (:use compojure)
-  (:use utterson.core))
+  (:use utterson.core)
+  (:use utterson.plugin))
 
 (defn get-pages []
   (let [pages (reader)]
     (await pages)
-    (map #(template % @pages) @pages)))
+    (do-action :all (map #(template % @pages) @pages))))
 
 (defn get-single [url]
   (some #(when (= url (:url (last %))) %) (get-pages)))

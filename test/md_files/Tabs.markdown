@@ -1,3 +1,5 @@
+title: Tabs
+tags: aap, noot, amp, tabs
 +	this is a list item
 	indented with tabs
 

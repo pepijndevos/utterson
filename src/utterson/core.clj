@@ -20,7 +20,8 @@
   (assoc meta-data :url
          (-> #^String (:src meta-data)
            (.replaceAll (.getCanonicalPath (File. *src-dir*)) "") ;needs a relative path!
-           (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
+           (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html"))
+           (.replaceAll "[^a-zA-Z/\\.]" ""))))
 
 (defn parser [#^File file]
   (loop [lines (line-seq (BufferedReader. (FileReader. file)))
@@ -39,7 +40,7 @@
       (send-off pages conj (parser (first files))))
     (if (next files)
       (recur (next files) pages)
-      (do-action :all-content pages))))
+      pages)))
 
 (defn template [page other]
   (let [path (->> (.split #^String (:src (last page)) (File/separator))
@@ -54,7 +55,7 @@
                     (.listFiles (File. p)))) path)) page other) (last page)])))
 
 (defn writer [pages]
-  (doseq [page (do-action :all-template pages)]
+  (doseq [page pages]
     (.mkdirs (.getParentFile (File. #^String (:dest (last page)))))
     (with-open [file (BufferedWriter.
                  (FileWriter. #^String (:dest (last page))))]
