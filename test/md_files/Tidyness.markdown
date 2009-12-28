@@ -1,5 +1,5 @@
-Title: Our favourite file...
-> A list within a blockquote:
+title: Our favourite file...
+> A list within a nice blockquote:
 > 
 > *	asterisk 1
 > *	asterisk 2

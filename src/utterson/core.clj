@@ -8,30 +8,37 @@
 
 (defn src->dest [meta-data #^String dir #^String dest]
   (assoc meta-data :dest
-         (-> #^String (:url meta-data)
-           (.replaceAll dir dest)
+         (-> #^String (:src meta-data)
+           (.replaceAll (.getCanonicalPath (File. dir)) (.getCanonicalPath (File. dest)))
+           (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
+
+(defn src->url [meta-data #^String dir]
+  (assoc meta-data :url
+         (-> #^String (:src meta-data)
+           (.replaceAll (.getCanonicalPath (File. dir)) "") ;needs a relative path!
            (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
 
 (defn parser [#^File file #^String dir #^String dest]
   (loop [lines (line-seq (BufferedReader. (FileReader. file)))
-         meta-data {:url (.getPath file)}]
+         meta-data {:src (.getCanonicalPath file)}]
     (let [data (re-find #"^(\w+): (.+)$" (first lines))]
       (if data
         (recur (rest lines) (assoc meta-data (keyword (second data)) (nth data 2)))
-        (do-action :filter [(future (markdown (apply str (interpose \newline lines)))) (src->dest meta-data dir dest)])))))
+        (do-action :filter [(future (markdown (apply str (interpose \newline lines))))
+                            (src->url (src->dest meta-data dir dest) dir)])))))
 
 (defn reader [#^String dir #^String dest]
   (loop [files (file-seq (File. dir)) pages (agent (do-action :start []))]
     (when (and (.isFile #^File (first files))
                (not(.isHidden #^File (first files)))
-               (.endsWith (.getPath #^File (first files)) ".markdown"))
+               (.endsWith (.getCanonicalPath #^File (first files)) ".markdown"))
       (send-off pages conj (parser (first files) dir dest)))
     (if (next files)
       (recur (next files) pages)
       (do-action :all-content pages))))
 
 (defn template [page other]
-  (let [path (->> (.split #^String (:url (last page)) (File/separator))
+  (let [path (->> (.split #^String (:src (last page)) (File/separator))
                   seq
                   (iterate butlast)
                   (map #(apply str (interleave % (repeat (java.io.File/separator)))))) 
@@ -39,7 +46,7 @@
     (if (.exists (File. filename))
       [((load-file filename) page other) (last page)]
       [((load-file (some (fn [#^String p]
-              (some #(when (= (.getName #^File %) "default.clj") (.getPath #^File %))
+              (some #(when (= (.getName #^File %) "default.clj") (.getCanonicalPath #^File %))
                     (.listFiles (File. p)))) path)) page other) (last page)])))
 
 (defn writer [pages]
