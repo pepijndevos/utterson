@@ -3,24 +3,25 @@
   (:use compojure)
   (:use utterson.core))
 
-(defn get-pages [src dest]
-  (let [pages (reader src dest)]
+(defn get-pages []
+  (let [pages (reader)]
     (await pages)
     (map #(template % @pages) @pages)))
 
-(defn get-single [url src dest]
-  (some #(when (= url (:url (last %))) %) (get-pages src dest)))
+(defn get-single [url]
+  (some #(when (= url (:url (last %))) %) (get-pages)))
 
-(defn serve [pages src dest]
+(defn serve [pages]
   (run-server {:port 8080} "/*" 
               (servlet
                 (apply compojure.http.routes/routes
                        (GET "/" "Hello World!")
-                       (map #(GET (:url (last %)) (get-single (:url (last %)) src dest)) pages)))))
+                       (map #(GET (:url (last %)) (get-single (:url (last %)))) pages)))))
 
 (defn -main [& args]
-  (let [pages (get-pages (last ( butlast args)) (last args))]
+  (init (last ( butlast args)) (last args))
+  (let [pages (get-pages)]
     (if (= (first args) "--server")
-      (serve pages (last ( butlast args)) (last args))
+      (serve pages)
       (do (writer pages) (shutdown-agents)))))
 

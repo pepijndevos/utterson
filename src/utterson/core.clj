@@ -3,36 +3,40 @@
   (:import (com.petebevin.markdown MarkdownProcessor))
   (:use utterson.plugin))
 
+(defn init [dir dest]
+  (def *src-dir* #^String dir)
+  (def *dest-dir* #^String dest))
+
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))
 
-(defn src->dest [meta-data #^String dir #^String dest]
+(defn src->dest [meta-data]
   (assoc meta-data :dest
          (-> #^String (:src meta-data)
-           (.replaceAll (.getCanonicalPath (File. dir)) (.getCanonicalPath (File. dest)))
+           (.replaceAll (.getCanonicalPath (File. *src-dir*)) (.getCanonicalPath (File. *dest-dir*)))
            (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
 
-(defn src->url [meta-data #^String dir]
+(defn src->url [meta-data]
   (assoc meta-data :url
          (-> #^String (:src meta-data)
-           (.replaceAll (.getCanonicalPath (File. dir)) "") ;needs a relative path!
+           (.replaceAll (.getCanonicalPath (File. *src-dir*)) "") ;needs a relative path!
            (.replaceAll "\\.markdown$" #^String (:extension meta-data ".html")))))
 
-(defn parser [#^File file #^String dir #^String dest]
+(defn parser [#^File file]
   (loop [lines (line-seq (BufferedReader. (FileReader. file)))
          meta-data {:src (.getCanonicalPath file)}]
     (let [data (re-find #"^(\w+): (.+)$" (first lines))]
       (if data
         (recur (rest lines) (assoc meta-data (keyword (second data)) (nth data 2)))
         (do-action :filter [(future (markdown (apply str (interpose \newline lines))))
-                            (src->url (src->dest meta-data dir dest) dir)])))))
+                            (src->url (src->dest meta-data))])))))
 
-(defn reader [#^String dir #^String dest]
-  (loop [files (file-seq (File. dir)) pages (agent (do-action :start []))]
+(defn reader []
+  (loop [files (file-seq (File. *src-dir*)) pages (agent (do-action :start []))]
     (when (and (.isFile #^File (first files))
                (not(.isHidden #^File (first files)))
                (.endsWith (.getCanonicalPath #^File (first files)) ".markdown"))
-      (send-off pages conj (parser (first files) dir dest)))
+      (send-off pages conj (parser (first files))))
     (if (next files)
       (recur (next files) pages)
       (do-action :all-content pages))))
