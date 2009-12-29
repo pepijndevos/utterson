@@ -1,2 +1,2 @@
 (defn post [a b]
-  (str "this is Tydiness.clj" \newline @(first a)))
+  (assoc a :body (str "this is Tydiness.clj" \newline (:body a))))

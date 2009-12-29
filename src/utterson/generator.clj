@@ -1,28 +1,21 @@
 (ns utterson.generator
   (:gen-class)
   (:use compojure)
-  (:use utterson.core)
-  (:use utterson.plugin))
+  (:use utterson.core))
 
-(defn get-pages []
-  (let [pages (reader)]
-    (await pages)
-    (do-action :all (map #(template % @pages) @pages))))
+(defn get-single [url src dest]
+  (some #(when (= url (:url (last %))) %) (template (reader src dest))))
 
-(defn get-single [url]
-  (some #(when (= url (:url (last %))) %) (get-pages)))
-
-(defn serve [pages]
+(defn serve [pages src dest]
   (run-server {:port 8080} "/*" 
               (servlet
                 (apply compojure.http.routes/routes
                        (GET "/" "Hello World!")
-                       (map #(GET (:url (last %)) (get-single (:url (last %)))) pages)))))
+                       (map #(GET (:url %) (:body (get-single (:url %) src dest))) pages)))))
 
 (defn -main [& args]
-  (init (last ( butlast args)) (last args))
-  (let [pages (get-pages)]
+  (let [pages (template (reader (last (butlast args)) (last args)))]
     (if (= (first args) "--server")
-      (serve pages)
+      (serve pages (last (butlast args)) (last args))
       (do (writer pages) (shutdown-agents)))))
 

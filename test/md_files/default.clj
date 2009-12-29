@@ -3,12 +3,12 @@
   (:require utterson.util))
 
 (defn page [a b]
-  (with-out-str (clojure.contrib.prxml/prxml 
+  (assoc a :body (with-out-str (clojure.contrib.prxml/prxml 
                   [:html
                    [:head
                     [:title
-                     (:title (second a))]]
+                     (:title a)]]
                    [:body
-                    [:h1 (:title (second a))]
-                    [:raw! @(first a)]
-                    [:raw! (utterson.util/menu b)]]])))
+                    [:h1 (:title a)]
+                    [:raw! (:body a)]
+                    [:raw! (utterson.util/menu b)]]]))))
