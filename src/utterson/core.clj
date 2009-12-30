@@ -35,9 +35,9 @@
 
 (defn reader [#^String src #^string dest]
   (do-action :all-content (with-meta (for [pages (do-action :files (file-seq (File. src)))
-        :when (and (.isFile #^File pages)
-                   (not (.isHidden #^File pages))
-                   (.endsWith (.getCanonicalPath #^File pages) ".markdown"))]
+                                           :when (and (.isFile #^File pages)
+                                                      (not (.isHidden #^File pages))
+                                                      (.endsWith (.getCanonicalPath #^File pages) ".markdown"))]
                                        (parser pages src dest)) {:src src, :dest dest})))
 
 (defn template

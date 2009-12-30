@@ -17,5 +17,5 @@
   (let [pages (template (reader (last (butlast args)) (last args)))]
     (if (= (first args) "--server")
       (serve pages (last (butlast args)) (last args))
-      (do (writer pages) (shutdown-agents)))))
+      (writer pages))))
 
