@@ -6,7 +6,6 @@
   (swap! actions assoc action (conj (action @actions) function)))
 
 (defn do-action [action arg]
-  (println "doing" action)
   (reduce #(%2 %1) arg (action @actions)))
 
 (doseq [file (->> (file-seq (java.io.File. "utterson/plugin"))

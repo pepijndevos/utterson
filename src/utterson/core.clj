@@ -1,10 +1,8 @@
 (ns utterson.core
   (:import (java.io File FileReader FileWriter BufferedReader BufferedWriter))
   (:import (com.petebevin.markdown MarkdownProcessor))
-  (:use utterson.plugin)
-  (:use utterson.util))
-
-(defstruct page-struct :body :srcdir :destdir :src :dest :url :title)
+  (:use utterson.util)
+  (:use utterson.plugin))
 
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))

@@ -1,6 +1,8 @@
 (ns utterson.util
   (:require compojure.html))
 
+(defstruct page-struct :body :srcdir :destdir :src :dest :url :title)
+
 (defn menu "Generate a simple list of a list of pages."
   [pages]
   (compojure.html/html
