@@ -27,16 +27,16 @@
   (let [file (:body page)
         [meta body] (split-with #(re-find #"^(\w+): (.+)$" %)
                                 (line-seq (BufferedReader. (FileReader. file))))]
-    (into
-      (->> (interpose \newline body)
-           (apply str)
-           markdown
-           (assoc page :src (.getCanonicalPath file) :body)
-           src->dest
-           src->url
-           (do-action :filter))
-      (map #(let [data (re-find #"^(\w+): (.+)$" %)]
-              [(keyword (.toLowerCase (second data))) (nth data 2)]) meta))))
+    (do-action :filter
+               (src->dest
+                 (src->url
+                   (into
+                     (->> (interpose \newline body)
+                          (apply str)
+                          markdown
+                          (assoc page :src (.getCanonicalPath file) :body))
+                     (map #(let [data (re-find #"^(\w+): (.+)$" %)]
+                             [(keyword (.toLowerCase (second data))) (nth data 2)]) meta)))))))
 
 (defn reader [#^String src #^string dest]
   (do-action :all-content
