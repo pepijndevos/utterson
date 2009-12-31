@@ -1,14 +1,14 @@
 (ns default
-  (:require clojure.contrib.prxml)
+  (:require compojure.html)
   (:require utterson.util))
 
 (defn page [a b]
-  (assoc a :body (with-out-str (clojure.contrib.prxml/prxml 
+  (assoc a :body (compojure.html/html
                   [:html
                    [:head
                     [:title
                      (:title a)]]
                    [:body
                     [:h1 (:title a)]
-                    [:raw! (:body a)]
-                    [:raw! (utterson.util/menu b)]]]))))
+                    (:body a)
+                    (utterson.util/menu b)]])))

@@ -4,41 +4,47 @@
   (:use utterson.plugin)
   (:use utterson.util))
 
+(defstruct page-struct :body :srcdir :destdir :src :dest :url :title)
+
 (defn markdown [txt] ;Might be replaced with Showdown
   (.markdown (new com.petebevin.markdown.MarkdownProcessor) txt))
 
-(defn src->dest [page #^String src #^String dest]
+(defn src->dest [page]
   (assoc page :dest
          (-> #^String (:src page)
-           (.replaceAll (.getCanonicalPath (File. src)) (.getCanonicalPath (File. dest)))
-           (.replaceAll "\\.markdown$" #^String (:extension (meta page) ".html")))))
+           (.replaceAll (.getCanonicalPath (File. #^String (:srcdir page)))
+                        (.getCanonicalPath (File. #^String (:destdir page))))
+           (.replaceAll "\\.markdown$" #^String (:extension page ".html")))))
 
-(defn src->url [page #^String src]
+(defn src->url [page]
   (assoc page :url
          (-> #^String (:src page)
-           (.replaceAll (.getCanonicalPath (File. src)) "") ;needs a relative path!
-           (.replaceAll "\\.markdown$" #^String (:extension (meta page) ".html"))
+           (.replaceAll (.getCanonicalPath (File. #^String (:srcdir page))) "") ;needs a relative path!
+           (.replaceAll "\\.markdown$" #^String (:extension page ".html"))
            (.replaceAll "[^a-zA-Z/\\.]" ""))))
 
-(defn parser [#^File file #^String src #^String dest]
-  (loop [lines (with-meta (line-seq (BufferedReader. (FileReader. file)))
-                          {:src (.getCanonicalPath file)})]
-    (let [data (re-find #"^(\w+): (.+)$" (first lines))]
-      (if data
-        (recur (with-meta (rest lines) (assoc (meta lines) (keyword (second data)) (nth data 2))))
-        (maze-thread (apply str (interpose \newline lines))
-                     (markdown %)
-                     (assoc (meta lines) :body %)
-                     (src->dest % src dest)
-                     (src->url % src)
-                     (do-action :filter %))))))
+(defn parser [page]
+  (let [file (:body page)
+        [meta body] (split-with #(re-find #"^(\w+): (.+)$" %)
+                                (line-seq (BufferedReader. (FileReader. file))))]
+    (into
+      (->> (interpose \newline body)
+           (apply str)
+           markdown
+           (assoc page :src (.getCanonicalPath file) :body)
+           src->dest
+           src->url
+           (do-action :filter))
+      (map #(let [data (re-find #"^(\w+): (.+)$" %)]
+              [(keyword (.toLowerCase (second data))) (nth data 2)]) meta))))
 
 (defn reader [#^String src #^string dest]
-  (do-action :all-content (with-meta (for [pages (do-action :files (file-seq (File. src)))
-                                           :when (and (.isFile #^File pages)
-                                                      (not (.isHidden #^File pages))
-                                                      (.endsWith (.getCanonicalPath #^File pages) ".markdown"))]
-                                       (parser pages src dest)) {:src src, :dest dest})))
+  (do-action :all-content
+             (for [pages (do-action :files (file-seq (File. src)))
+                   :when (and (.isFile #^File pages)
+                              (not (.isHidden #^File pages))
+                              (.endsWith (.getCanonicalPath #^File pages) ".markdown"))]
+               (parser (struct page-struct pages src dest)))))
 
 (defn template
   ([other]
@@ -56,5 +62,5 @@
   (doseq [page pages]
     (.mkdirs (.getParentFile (File. #^String (:dest page))))
     (with-open [file (BufferedWriter.
-                 (FileWriter. #^String (:dest page)))]
+                       (FileWriter. #^String (:dest page)))]
       (.write file #^String (:body page)))))

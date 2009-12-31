@@ -4,7 +4,7 @@
   (:use utterson.core))
 
 (defn get-single [url src dest]
-  (some #(when (= url (:url (last %))) %) (template (reader src dest))))
+  (some #(when (= url (:url %)) %) (template (reader src dest))))
 
 (defn serve [pages src dest]
   (run-server {:port 8080} "/*" 
