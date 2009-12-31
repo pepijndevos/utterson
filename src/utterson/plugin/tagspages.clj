@@ -1,4 +1,4 @@
-(ns utterson.plugin.testplugin
+(ns utterson.plugin.tagspages
   (:use utterson.plugin)
   (:use utterson.util))
 

@@ -61,4 +61,5 @@
     (.mkdirs (.getParentFile (File. #^String (:dest page))))
     (with-open [file (BufferedWriter.
                        (FileWriter. #^String (:dest page)))]
+      (println (:dest page))
       (.write file #^String (:body page)))))

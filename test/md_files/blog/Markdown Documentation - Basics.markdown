@@ -1,3 +1,6 @@
+title: Markdown Basics
+date: 07/05/24
+
 Markdown: Basics
 ================
 

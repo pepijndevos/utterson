@@ -1,3 +1,6 @@
+title: Markdown Syntax
+date: 07/05/24
+
 Markdown: Syntax
 ================
 
