@@ -10,4 +10,4 @@
                      (:title a)]]
                    [:body
                     [:h1 (:title a)]
-                    (utterson.util/menu (filter #(.contains (or #^String (:tags %) "") #^String (:body a)) b))]])))
+                    (utterson.util/menu (filter #(.contains (or #^String (:tags %) "") #^String (force (:body a))) b))]])))

@@ -32,6 +32,7 @@
                      (->> (interpose \newline body)
                           (apply str)
                           markdown
+                          delay
                           (assoc page :src (.getCanonicalPath file) :body))
                      (map #(let [data (re-find #"^(\w+): (.+)$" %)]
                              [(keyword (.toLowerCase (second data))) (nth data 2)]) meta)))))))
@@ -61,5 +62,4 @@
     (.mkdirs (.getParentFile (File. #^String (:dest page))))
     (with-open [file (BufferedWriter.
                        (FileWriter. #^String (:dest page)))]
-      (println (:dest page))
-      (.write file #^String (:body page)))))
+      (.write file #^String (force (:body page))))))

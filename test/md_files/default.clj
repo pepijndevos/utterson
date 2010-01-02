@@ -10,5 +10,5 @@
                      (:title a)]]
                    [:body
                     [:h1 (:title a)]
-                    (:body a)
+                    (force (:body a))
                     (utterson.util/menu b)]])))
