@@ -62,4 +62,5 @@
     (.mkdirs (.getParentFile (File. #^String (:dest page))))
     (with-open [file (BufferedWriter.
                        (FileWriter. #^String (:dest page)))]
-      (.write file #^String (force (:body page))))))
+      (.write file #^String (force (:body page)))))
+  (do-action :writing [(:srcdir (first pages)) (:destdir (first pages))]))
