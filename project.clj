@@ -5,4 +5,4 @@
                            [org.clojars.mcav/pegdown "0.8.5.1"]
                            [enlive "1.0.0-SNAPSHOT"]]
             :dev-dependencies [[org.clojars.brandonw/lein-nailgun "1.0.0"]]
-            :main utterson.generator)
+            :main utterson.main)
