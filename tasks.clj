@@ -4,6 +4,7 @@
 
 (deftask site
   (bake
-    (:use utterson.main utterson.plugin)
-    []
-    (execute (keyword (first (:site *opts*))) *opts*)))
+    (:use utterson.main utterson.plugin) []
+    (try
+      (execute (keyword (first (:site *opts*))) *opts*)
+      (catch java.lang.IllegalArgumentException e (println "Unkown command")))))
