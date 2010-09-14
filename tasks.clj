@@ -4,5 +4,6 @@
 
 (deftask site
   (bake
-    (:use utterson.plugin utterson.main) [] 
-    (execute (first (:site *opts*)))))
+    (:use utterson.main utterson.plugin)
+    []
+    (execute (keyword (first (:site *opts*))) *opts*)))

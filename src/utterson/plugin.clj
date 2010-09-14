@@ -10,6 +10,5 @@
 
 (defn execute
   "Execute the comp of all functions attached to hook"
-  ([hook] ((apply comp (hook @hooks))))
   ([hook arg] ((apply comp (hook @hooks)) arg))
   ([hook arg & args] (apply (apply comp (hook @hooks)) arg args)))
