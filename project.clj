@@ -3,6 +3,6 @@
             :dependencies [[org.clojure/clojure "1.2.0"]
                            [org.clojure/clojure-contrib "1.2.0"]
                            [org.clojars.mcav/pegdown "0.8.5.1"]
-                           [enlive "1.0.0-SNAPSHOT"]]
-            :dev-dependencies [[org.clojars.brandonw/lein-nailgun "1.0.0"]]
+                           [enlive "1.0.0-SNAPSHOT"]
+                           [org.clojars.febeling/clj-yaml "0.3.0-SNAPSHOT"]]
             :main utterson.main)
