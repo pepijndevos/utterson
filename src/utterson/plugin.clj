@@ -8,6 +8,7 @@
   [hook function]
   (swap! hooks update-in [hook] conj function))
 
-(defn execute [hook arg]
+(defn execute
   "Execute the comp of all functions attached to hook"
+  [hook arg]
   ((apply comp identity (hook @hooks)) arg))

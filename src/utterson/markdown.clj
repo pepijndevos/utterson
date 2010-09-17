@@ -3,7 +3,11 @@
   (:use [clj-yaml.core :only [parse-string]])
   (:use [clojure.contrib.duck-streams :only [read-lines]]))
 
-(defn parse [path]
+(defn parse
+  "Parse file at path returning a vector [headers content]
+  where headers is parsed with YAML up to \n\n
+  and content the rest of the file using Markdown"
+  [path]
   (let [path (.getFile
                (.getResource
                  (class parse) path))
