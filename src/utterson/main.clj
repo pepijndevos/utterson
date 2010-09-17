@@ -1,5 +1,6 @@
 (ns utterson.main
   (:use utterson.plugin)
+  (:use site)
   (:require ring.adapter.jetty
             ring.middleware.file
             ring.middleware.file-info
@@ -10,13 +11,10 @@
 (register :echo #(println %))
 
 (register :preview
-  (fn preview [path]
-    (let [site (load-file
-                 (.getAbsolutePath
-                   (clojure.java.io/file path "site.clj")))
-          site (-> site
+  (fn preview [_]
+    (let [site (-> site
                  (ring.middleware.file/wrap-file
-                   (.getAbsolutePath
-                     (clojure.java.io/file path "source")))
+                   (.getFile
+                     (.getResource (class site) "source")))
                  ring.middleware.file-info/wrap-file-info)]
       (ring.adapter.jetty/run-jetty site {:port 8080}))))
