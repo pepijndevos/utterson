@@ -12,9 +12,12 @@
 
 (register :preview
   (fn preview [_]
-    (let [site (-> site
-                 (ring.middleware.file/wrap-file
-                   (.getFile
-                     (.getResource (class site) "source")))
-                 ring.middleware.file-info/wrap-file-info)]
-      (ring.adapter.jetty/run-jetty site {:port 8080}))))
+    (let [path (.getFile
+                 (.getResource (class site) "source"))
+          handler (org.mortbay.jetty.handler.ResourceHandler.)]
+      ;(.setDirectoriesListed handler true)
+      (.setResourceBase handler path)
+      (ring.adapter.jetty/run-jetty
+        site
+        {:port 8080
+         :configurator #(.addHandler % handler)}))))
