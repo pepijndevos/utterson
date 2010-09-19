@@ -1,5 +1,8 @@
 (ns utterson.plugin)
 
+(def source-path (.getFile (.getResource (clojure.lang.DynamicClassLoader.) "source")))
+(def source-dir (java.io.File. source-path))
+
 (def hooks (atom {}))
 
 (defn register
