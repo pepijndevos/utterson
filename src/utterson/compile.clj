@@ -53,7 +53,12 @@
   [template-name self others]
   `(defn ~template-name [markdown# template#]
      (let [markdown# (io/file path markdown#)
+           html# (md->html markdown#)
            [headers# body#] (parse markdown#)
-           resources# (get-html-resources)]
-       (println markdown# body# headers# resources#))))
-
+           resources# (get-html-resources)
+           template# (if-not template#
+                       (closest markdown#)
+                       template#)
+           template# (en/template template# [~'headers ~'body] ~@self)]
+       (io/make-parents html#)
+       (spit html# (apply str (template# headers# body#))))))
