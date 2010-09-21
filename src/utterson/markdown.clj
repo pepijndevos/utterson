@@ -12,6 +12,6 @@
                             (read-lines path))
         headers (apply str (interleave headers (repeat \newline)))
         content (apply str (interleave content (repeat \newline)))]
-    (cons (parse-string headers)
-          (lazy-seq (list (.(org.pegdown.PegDownProcessor.)
-                                    markdownToHtml content))))))
+    [(parse-string headers)
+     (.(org.pegdown.PegDownProcessor.)
+        markdownToHtml content)]))
