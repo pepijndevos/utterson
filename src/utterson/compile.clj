@@ -11,12 +11,11 @@
             .getParentFile))
 
 (defn html? [file]
-  #(.endsWith (.getName file) ".html"))
+  (.endsWith (.getName file) ".html"))
 
-(defn get-html-resources []
-  (let [files (filter html?
-                      (flatten (file-seq path)))]
-    (map en/html-resource files)))
+(defn get-html-files []
+  (filter html?
+          (flatten (file-seq path))))
 
 (defn md->html [markdown]
   (if (= (.getName markdown) "index.md")
@@ -55,10 +54,12 @@
      (let [markdown# (io/file path markdown#)
            html# (md->html markdown#)
            [headers# body#] (parse markdown#)
-           resources# (get-html-resources)
            template# (if-not template#
                        (closest markdown#)
                        template#)
            template# (en/template template# [~'headers ~'body] ~@self)]
        (io/make-parents html#)
-       (spit html# (apply str (template# headers# body#))))))
+       (spit html# (apply str (template# headers# body#)))
+       (doseq [file# (get-html-files)
+               :let [template# (en/template file# [~'headers ~'body] ~@others)]]
+         (spit file# (apply str (template# headers# body#)))))))
