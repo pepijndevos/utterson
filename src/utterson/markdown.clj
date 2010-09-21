@@ -1,5 +1,4 @@
 (ns utterson.markdown
-  (:use utterson.plugin)
   (:use [clj-yaml.core :only [parse-string]])
   (:use [clojure.contrib.duck-streams :only [read-lines]]))
 
@@ -13,6 +12,6 @@
                             (read-lines path))
         headers (apply str (interleave headers (repeat \newline)))
         content (apply str (interleave content (repeat \newline)))]
-    (cons (execute :headers  (parse-string headers))
-          (lazy-seq (list (execute :markdown (.(org.pegdown.PegDownProcessor.)
-                                    markdownToHtml content)))))))
+    (cons (parse-string headers)
+          (lazy-seq (list (.(org.pegdown.PegDownProcessor.)
+                                    markdownToHtml content))))))

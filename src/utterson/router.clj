@@ -1,15 +1,7 @@
 (ns utterson.router
-  (:use utterson.plugin
-        utterson.markdown)
+  (:use utterson.markdown)
   (:require clojure.java.io
             ring.util.response))
-
-(def pages (atom #{}))
-
-(register :headers
-  (fn [yaml]
-    (swap! pages conj yaml)
-    yaml))
 
 (defn utter
   "Ring middleware for calling your template
@@ -26,5 +18,5 @@
           [headers content] (parse file)]
       {:status 200
        :headers {"Content-Type" "text/html;charset=UTF-8"}
-       :body (apply str (template content headers @pages))})))
+       :body (apply str (template content headers))})))
 
