@@ -44,7 +44,7 @@
 (defn action-or-update
   [action selector & nodes]
   (let [append (apply action nodes)]
-    #(if (seq (en/select % [(en/has selector)]))
+    #(if ((en/has selector) %)
       (en/at % selector (apply en/substitute nodes))
       (append %))))
 
@@ -64,6 +64,7 @@
      (let [markdown# (io/file path markdown#)
            html# (md->html markdown#)
            [headers# body#] (parse markdown#)
+           headers# (assoc headers# :path (.getPath html#))
            template# (if-not template#
                        (closest markdown#)
                        template#)
