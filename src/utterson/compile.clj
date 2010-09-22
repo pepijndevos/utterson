@@ -41,6 +41,16 @@
                  (io/file % "index.html"))
               (iterate #(.getParentFile %) html))))))
 
+(defn action-or-update
+  [action selector & nodes]
+  (let [append (apply action nodes)]
+    #(if (seq (en/select % [(en/has selector)]))
+      (en/at % selector (apply en/substitute nodes))
+      (append %))))
+
+(def append-or-update (partial action-or-update en/append))
+
+(def prepend-or-update (partial action-or-update en/prepend))
 
 (defmacro defgen
   "Like deftemplate in Enlive,
