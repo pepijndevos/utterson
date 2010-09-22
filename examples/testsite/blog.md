@@ -1,4 +1,5 @@
-title: Lorem Ipsum
+title: The blogipsum
+id: blog
 tags:
   - blog
   - test

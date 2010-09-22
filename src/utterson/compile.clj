@@ -43,10 +43,10 @@
 
 (defn action-or-update
   [action selector & nodes]
-  (let [append (apply action nodes)]
-    #(if ((en/has selector) %)
+  (let [action (apply action nodes)]
+    #(if (seq (en/select % [(en/has selector)]))
       (en/at % selector (apply en/substitute nodes))
-      (append %))))
+      (action %))))
 
 (def append-or-update (partial action-or-update en/append))
 
@@ -63,8 +63,9 @@
   `(defn ~template-name [markdown# template#]
      (let [markdown# (io/file path markdown#)
            html# (md->html markdown#)
+           rel-html# (.relativize (.toURI path) (.toURI html#))
            [headers# body#] (parse markdown#)
-           headers# (assoc headers# :path (.getPath html#))
+           headers# (assoc headers# :path (.getPath rel-html#))
            template# (if-not template#
                        (closest markdown#)
                        template#)
