@@ -10,14 +10,22 @@
             io/file
             .getParentFile))
 
-(defn- html? [file]
+(defn- html?
+  "Test if file is a html file"
+  [file]
   (.endsWith (.getName file) ".html"))
 
-(defn- get-html-files []
+(defn- get-html-files
+  "Get all html files from path"
+  []
   (filter html?
           (flatten (file-seq path))))
 
-(defn- md->html [markdown]
+(defn- md->html
+  "Convert the given .md File to the appropriate .html File.
+  If not an index file, make it filename/index.html
+  for pretty links."
+  [markdown]
   (if (= (.getName markdown) "index.md")
     (io/file (.getParentFile markdown)
              "index.html")
@@ -25,7 +33,13 @@
              (first (st/split (.getName markdown) #"\."))
              "index.html")))
 
-(defn- closest [markdown]
+(defn- closest
+  "Determine the closest file to the given one.
+  Closest is defined in this order:
+  - itself
+  - the most recent file in the same dir
+  - the first index file in a parent dir"
+  [markdown]
   (let [html (md->html markdown)]
     (if (.exists html)
       html
@@ -42,6 +56,10 @@
               (iterate #(.getParentFile %) html))))))
 
 (defn action-or-update
+  "Generate idempotent Enlive functions.
+  If the selector returns one or more nodes,
+  substitute for nodes.
+  Else, use action"
   [action selector & nodes]
   (let [action (apply action nodes)]
     #(if (seq (en/select % [(en/has selector)]))
@@ -52,10 +70,16 @@
 
 (def prepend-or-update (partial action-or-update en/prepend))
 
-(defmacro chain-template [rec expr]
-  `(en/snippet* ~(en/html-resource rec) [~'headers ~'body] ~@expr))
+(defmacro chain-template
+  "Like snippet* but for our own evil purposes"
+  [rec expr]
+  `(en/snippet* (en/html-resource ~rec) [~'headers ~'body] ~@expr))
 
-(defn- update-all [pages]
+(defn- update-all
+  "Updates all html pages for every page given as
+  [headers body expressions]
+  but save on IO as much as possible."
+  [pages]
   (doseq [file (get-html-files)]
     (reduce (fn [html page]
               (-> (chain-template
@@ -67,11 +91,14 @@
                   (spit file))))
             file pages)))
 
-(defn- generate [template file self]
+(defn- generate
+  "Run template with the Markdown-parsed file and expressions in self.
+  if template is nil, closest is used."
+  [template file self]
   (let [template (if-not template
                    (closest file)
                    template)
-        template (chain-template template [headers body] self)
+        template (chain-template template self)
         file (io/file path file)
         html (md->html file)
         rel-html (.relativize (.toURI path) (.toURI html))
@@ -84,35 +111,22 @@
                  (apply str))))
     [headers body]))
         
-(defn generator [template files self others]
+(defn generator
+  "Generate and update all html files using template or closest.
+  files is a seq of Markdown files.
+  self and others are Enlive expressions for generating files
+  and updating all other files respecively."
+  [template files self others]
   (-> (map #(conj (generate template % self) others) files)
     update-all))
     
 
-(defmacro defgen [template-name self others]
+(defmacro defgen
+  "Like Enlives deftemplate, with source and args provided.
+  args is always [headers body]
+  forms are given in 2 seqs.
+  The first one for generating pages.
+  The second one for updating references"
+  [template-name self others]
   `(defn ~template-name [template# files#]
     (generator template# files# ~self ~others)))
-
-(comment (defmacro defgen
-  "Like deftemplate in Enlive,
-  but with 2 sets of selectors.
-  One for creating the page,
-  the other for updating information elsewere.
-  The locals body and headers are exposed and contain
-  the parsed Markdown and headers(title, tags...) respectively."
-  [template-name self others]
-  `(defn ~template-name [markdown# template#]
-     (let [markdown# (io/file path markdown#)
-           html# (md->html markdown#)
-           rel-html# (.relativize (.toURI path) (.toURI html#))
-           [headers# body#] (parse markdown#)
-           headers# (assoc headers# :path (.getPath rel-html#))
-           template# (if-not template#
-                       (closest markdown#)
-                       template#)
-           template# (en/template template# [~'headers ~'body] ~@self)]
-       (io/make-parents html#)
-       (spit html# (apply str (template# headers# body#)))
-       (doseq [file# (get-html-files)
-               :let [template# (en/template file# [~'headers ~'body] ~@others)]]
-         (spit file# (apply str (template# headers# body#))))))))
