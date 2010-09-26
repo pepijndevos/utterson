@@ -10,14 +10,14 @@
             io/file
             .getParentFile))
 
-(defn html? [file]
+(defn- html? [file]
   (.endsWith (.getName file) ".html"))
 
-(defn get-html-files []
+(defn- get-html-files []
   (filter html?
           (flatten (file-seq path))))
 
-(defn md->html [markdown]
+(defn- md->html [markdown]
   (if (= (.getName markdown) "index.md")
     (io/file (.getParentFile markdown)
              "index.html")
@@ -25,7 +25,7 @@
              (first (st/split (.getName markdown) #"\."))
              "index.html")))
 
-(defn closest [markdown]
+(defn- closest [markdown]
   (let [html (md->html markdown)]
     (if (.exists html)
       html
@@ -52,7 +52,48 @@
 
 (def prepend-or-update (partial action-or-update en/prepend))
 
-(defmacro defgen
+(defmacro chain-template [rec expr]
+  `(en/snippet* ~(en/html-resource rec) [~'headers ~'body] ~@expr))
+
+(defn- update-all [pages]
+  (doseq [file (get-html-files)]
+    (reduce (fn [html page]
+              (-> (chain-template
+                    html
+                    (last page))
+                (apply (drop-last page))
+                (->>
+                  (apply str)
+                  (spit file))))
+            file pages)))
+
+(defn- generate [template file self]
+  (let [template (if-not template
+                   (closest file)
+                   template)
+        template (chain-template template [headers body] self)
+        file (io/file path file)
+        html (md->html file)
+        rel-html (.relativize (.toURI path) (.toURI html))
+        [headers body] (parse file)
+        headers (assoc headers# :path (.getPath rel-html))]
+    (-> html
+      io/make-parents
+      (spit (->> (template headers body)
+                 en/emit*
+                 (apply str))))
+    [headers body]))
+        
+(defn generator [template files self others]
+  (-> (map #(conj (generate template % self) others) files)
+    update-all))
+    
+
+(defmacro defgen [template-name self others]
+  `(defn ~template-name [template# files#]
+    (generator template# files# ~self ~others)))
+
+(comment (defmacro defgen
   "Like deftemplate in Enlive,
   but with 2 sets of selectors.
   One for creating the page,
@@ -74,4 +115,4 @@
        (spit html# (apply str (template# headers# body#)))
        (doseq [file# (get-html-files)
                :let [template# (en/template file# [~'headers ~'body] ~@others)]]
-         (spit file# (apply str (template# headers# body#)))))))
+         (spit file# (apply str (template# headers# body#))))))))

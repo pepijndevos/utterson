@@ -21,4 +21,4 @@
         (->> (symbol "site"))
         resolve
         deref
-        (apply [(last task) template])))))
+        (apply template task)))))
