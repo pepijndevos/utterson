@@ -70,10 +70,10 @@
 
 (def prepend-or-update (partial action-or-update en/prepend))
 
-(defmacro chain-template
+(defn chain-template
   "Like snippet* but for our own evil purposes"
   [rec expr]
-  `(en/snippet* (en/html-resource ~rec) [~'headers ~'body] ~@expr))
+  (eval `(en/snippet* (en/html-resource ~rec) [~'headers ~'body] ~@expr)))
 
 (defn- update-all
   "Updates all html pages for every page given as
@@ -103,10 +103,10 @@
         html (md->html file)
         rel-html (.relativize (.toURI path) (.toURI html))
         [headers body] (parse file)
-        headers (assoc headers# :path (.getPath rel-html))]
+        headers (assoc headers :path (.getPath rel-html))]
     (-> html
       io/make-parents
-      (spit (->> (template headers body)
+      (spit html (->> (template headers body)
                  en/emit*
                  (apply str))))
     [headers body]))
@@ -128,5 +128,5 @@
   The first one for generating pages.
   The second one for updating references"
   [template-name self others]
-  `(defn ~template-name [template# files#]
+  `(defn ~template-name [template# & files#]
     (generator template# files# ~self ~others)))

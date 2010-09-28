@@ -11,7 +11,7 @@
       [serve "Start a dev server on the given port"]
       [interactive? "Run Utterson in interactive mode"]
      task]
-    (let [path (-> (clojure.lang.DynamicClassLoader.)
+      (let [path (-> (clojure.lang.DynamicClassLoader.)
             (.getResource "site.clj")
             .getFile)]
       (load-file path)
@@ -21,4 +21,4 @@
         (->> (symbol "site"))
         resolve
         deref
-        (apply template task)))))
+        (apply template (next task))))))
