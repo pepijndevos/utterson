@@ -1,6 +1,5 @@
-pom-generated.xml
+pom.xml
 Manifest.txt
-..jar
 *.jar
 .DS_Store
 *.swp

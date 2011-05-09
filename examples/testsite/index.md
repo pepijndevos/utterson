@@ -1,9 +1,6 @@
 title: Lorem Ipsum Dolor Sit Amet
-id: index
-tags:
-  - fiets
-  - noot
-  - mies
+id:index
+tags: fiets, noot, mies
 
 ### Helo **world**!
 

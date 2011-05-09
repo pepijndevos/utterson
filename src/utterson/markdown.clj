@@ -1,17 +1,22 @@
 (ns utterson.markdown
-  (:use [clj-yaml.core :only [parse-string]])
-  (:use [clojure.contrib.duck-streams :only [read-lines]]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.walk :as walk]))
 
-(defn parse
-  "Parse file at path returning a vector [headers content]
-  where headers is parsed with YAML up to \n\n
-  and content the rest of the file using Markdown"
-  [path]
-  (let [[headers content] (split-with
-                            #(not= "" %)
-                            (read-lines path))
-        headers (apply str (interleave headers (repeat \newline)))
-        content (apply str (interleave content (repeat \newline)))]
-    [(parse-string headers)
-     (.(org.pegdown.PegDownProcessor.)
-        markdownToHtml content)]))
+(defn headers [lines]
+  (->> lines
+    (take-while (complement str/blank?))
+    (map #(str/split % #": ?"))
+    (into {})
+    walk/keywordize-keys))
+
+(defn markdown [lines]
+  (. (org.pegdown.PegDownProcessor.)
+     (markdownToHtml
+       (str/join \newline
+                 (drop-while (complement str/blank?)
+                             lines)))))
+
+(defn parse [path]
+  ((juxt headers markdown)
+     (line-seq (io/reader path))))
