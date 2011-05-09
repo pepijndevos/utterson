@@ -1,10 +1,9 @@
 (defproject utterson "0.1"
             :description "Utterson is a static site generator in the style of jekyll & hyde."
-            :dependencies [[org.clojure/clojure "1.2.0"]
-                           [org.clojure/clojure-contrib "1.2.0"]
-                           [org.clojars.mcav/pegdown "0.8.5.1"]
-                           [enlive "1.0.0-SNAPSHOT"]
-                           [clj-yaml "0.3.0"]
-                           [ring "0.3.0-RC2"]
-                           [net.cgrand/moustache "1.0.0-SNAPSHOT"]]
+            :dependencies [[org.clojure/clojure "1.2.1"]
+                           [org.pegdown/pegdown "0.9.2"]
+                           [enlive "1.0.0"]
+                           [ring "0.3.8"]
+                           [seqex "1.0.0-SNAPSHOT"]]
+            :repositories {"scala-tools.org" "http://scala-tools.org/repo-releases/"}
             :main utterson.main)

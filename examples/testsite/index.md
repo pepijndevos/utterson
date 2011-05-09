@@ -1,4 +1,4 @@
-title: Lorem Ipsum Dolor
+title: Lorem Ipsum Dolor Sit Amet
 id: index
 tags:
   - fiets
