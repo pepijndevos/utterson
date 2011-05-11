@@ -1,17 +1,26 @@
 (ns site
-  (:use utterson.compile net.cgrand.enlive-html))
+  (:require [clojure.string :as str])
+  (:use seqex
+        utterson.markdown))
 
-(defsnippet menu-item "index.html" [:#menu [:li first-child]] [id title href]
-  [:a] (content title)
-  [:a] (set-attr :href (str \/ href))
-  [:li] (set-attr :id id))
+(def settings {:site-name "Wishfull Coding"
+               :tagline "blabla"})
 
-(defgen page
-  [[:title] (content (:title headers))
-   [:#content] (html-content body)]
-
-  [[:#menu] (append-or-update [(id= (:id headers))]
-                              (menu-item
-                                (:id headers)
-                                (:title headers)
-                                (:path headers)))])
+(defn routes [path]
+  (cond-let
+    [[[_ file]] (match ["pages" #"(.*)\.md" end] path)]
+      [(str file "/index.html")
+       :any]
+    [[[_ yy mm dd file]] (match
+                           ["blog"
+                            #"([0-9]{2})-([0-9]{2})-([0-9]{2})-(.*)\.md"
+                            end]
+                           path)]
+      (let [tags (str/split
+                   (:tags (variables (str/join \/ (concat ["examples" "testsite"] path))))
+                   #"[, ]+")]
+        (concat
+          (for [t tags]
+            (str "tag/" t "/index.html"))
+          [(str/join \/ [yy mm dd file "index.html"])
+           (str file "/index.html")]))))

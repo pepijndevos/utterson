@@ -4,8 +4,7 @@
                            [org.pegdown/pegdown "0.9.2"]
                            [enlive "1.0.0"]
                            [ring "0.3.8"]
-                           [seqex "1.0.0-SNAPSHOT"]]
-                           ;[net.sf/jargs "1.0"]]
+                           [seqex "1.0.0-SNAPSHOT"]
+                           [commons-io "2.0.1"]]
             :repositories {"scala-tools.org" "http://scala-tools.org/repo-releases/"}
-                           ;"jboss.org" "http://repository.jboss.org/maven2/"}
             :main utterson.main)
