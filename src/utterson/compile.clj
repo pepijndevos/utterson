@@ -28,3 +28,8 @@
             (for [ext order
                   file (get exts ext)]
               (process file)))))
+
+(defn route [fs router]
+  (apply merge-with into
+         (for [file (keys fs)]
+           (into {} (map #(vector % [file]) (router file))))))
