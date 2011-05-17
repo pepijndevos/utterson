@@ -18,8 +18,10 @@
      (markdownToHtml (slurp r))))
 
 (defmethod process "md" [f]
-  (let [r (io/reader f)]
-    [(.getPath (io/file f))
-     [(variables r) (markdown r)]]))
-
+  (let [r (io/reader f)
+        path (.getPath (io/file f))]
+    [path
+     (assoc (variables r)
+            :content (markdown r)
+            :path path)]))
 

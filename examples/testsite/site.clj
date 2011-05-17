@@ -1,7 +1,9 @@
 (ns site
   (:require [clojure.string :as str])
   (:use seqex
-        utterson.markdown))
+        [utterson
+         markdown
+         mustache]))
 
 (def settings {:site-name "Wishfull Coding"
                :tagline "blabla"})
@@ -24,3 +26,5 @@
             (str "tag/" t "/index.html"))
           [(str/join \/ [yy mm dd file "index.html"])
            (str file "/index.html")]))))
+
+(process-all "." ["md" "mustache"] routes)

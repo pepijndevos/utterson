@@ -17,19 +17,23 @@
 
 (defmulti process extension)
 
-(defmethod process :default [path]
+(defmethod process :default [path]) ; do nothing
+
+(defmulti generate (fn [file data] (extension file)))
+
+(defmethod generate :default [path]
   (FileUtils/copyFile (io/file path) (io/file *dist* path)))
 
-(defn process-all [path order]
-  (let [fs (files (io/file path))
-        exts (group-by extension fs)]
-    (reduce conj
-            {}
-            (for [ext order
-                  file (get exts ext)]
-              (process file)))))
+(defn process-all [path]
+  (into {} (map process (files (io/file path)))))
 
 (defn route [fs router]
   (apply merge-with into
-         (for [file (keys fs)]
-           (into {} (map #(vector % [file]) (router file))))))
+         (for [[file data] fs]
+           (into {} (map #(vector % [data]) (router file))))))
+
+(defn generate-all [path settings data router]
+  (let [data (route data router)]
+    (doseq [file (files (io/file path))
+            :let [data (get data (.getPath file))]]
+      (println file data))))
